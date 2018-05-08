@@ -1,0 +1,26 @@
+1.@Cacheable(value=”accountCache”)，这个注释的意思是，当调用这个方法的时候，
+会从一个名叫 accountCache 的缓存中查询，如果没有，则执行实际的方法（即查询数据库），
+并将执行的结果存入缓存中，否则返回缓存中的对象。这里的缓存中的 key 就是参数 userName，
+value 就是 Account 对象。“accountCache”缓存是在 ehcache.xml 中定义的名称。
+
+以上我们需要自己定义在ehcache中的值。
+
+2.@CacheEvict 注释来标记要清空缓存的方法，当这个方法被调用后，即会清空缓存。
+注意其中一个 @CacheEvict(value=”accountCache”,key=”#account.getName()”)，
+其中的 Key 是用来指定缓存的 key 的，这里因为我们保存的时候用的是 account
+对象的 name 字段，所以这里还需要从参数 account 对象中获取 name 的值来作为 key，
+前面的 # 号代表这是一个 SpEL 表达式，此表达式可以遍历方法的参数对象，具体语法可以
+参考 Spring 的相关文档手册。
+
+
+3.@CachePut 注释，这个注释可以确保方法被执行，同时方法的返回值也被记录到缓存中，
+实现缓存与数据库的同步更新。@CachePut 的作用 主要针对方法配置，能够根据方法的
+请求参数对其结果进行缓存，和 @Cacheable 不同的是，它每次都会触发真实方法的调用。
+
+
+
+
+
+
+
+

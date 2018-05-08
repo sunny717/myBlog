@@ -1,0 +1,25 @@
+说明问题：用户角色权限者的关联，因从数据库中保存权限信息，而程序启动不能设置懒加载，故而导致
+        应用访问速度变慢。所以决定将权限配置放回配置文件，数据库配置的方法暂且记录，虽然现在已配置
+        缓存，但是效果不甚理想，后期找到解决办法之后，会改回数据库配置。
+
+数据库配置的方法：
+       1.首先明白安全管理的办法，主配置类SecurityConfiguration，在这里我们进行了数据库用户登录
+       校验(注入userDetailService),密码加密(passwordEncoder),csrf检测(CsrfSecurityRequestMatcher),
+       记住我(这里配置了JdbcTokenRepositoryImpl进行实现),自定义拦截器(CustomFilterSecurityInterceptor)
+       .其中自定拦截器包含了权限的装配(CustomSecurityMetadataSource)和决策(CustomAccessDecisionManager)
+       2.配置完成之后。需要设置用户角色权限的关联。因为user和role 是必须要的，所以它俩之间的关联暂且不去。
+       这里保存下role 和 permission的关联配置。
+       /**角色权限关联*/
+           /**@JsonIdentityInfo  用来解决多对多关联中json无限循环获取的错误*/
+           @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id",scope = ServerRequest.class)
+           @ManyToMany(cascade = {},fetch = FetchType.EAGER)
+           @JoinTable(name = "role_permission",
+                   joinColumns = {
+                           @JoinColumn(name = "role_id")
+                   },inverseJoinColumns = {@JoinColumn(name = "permission_id")})
+           private List<Permission> permissionList;
+
+       /**权限角色关联*/
+       @ManyToMany(mappedBy = "permissionList",fetch = FetchType.EAGER)
+       private List<Role> roleList = new ArrayList<Role>();
+
